@@ -1,4 +1,4 @@
-const express = require('express');
+/*const express = require('express');
 const dotenv = require('dotenv');
 const exerciseRoutes = require('./src/router/exerciseRoutes');
 const userRoutes = require('./src/router/userRoutes');
@@ -65,4 +65,74 @@ app.get('/get', (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+*/
+const express = require('express');
+const dotenv = require('dotenv');
+const helmet = require('helmet');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+
+// Import Routes
+const exerciseRoutes = require('./src/router/exerciseRoutes');
+const userRoutes = require('./src/router/userRoutes');
+const categorieRoutes = require('./src/router/categorieRouter');
+const levelRoutes = require('./src/router/levelRouter');
+const typesRoutes = require('./src/router/typesRoutes');
+const atackRoutes = require('./src/router/atackMusculeRouter');
+const videoByRoutes = require('./src/router/videoByRouter');
+const plansRouter = require('./src/router/planRouter');
+const workoutsRouter = require('./src/router/workoutRoutes');
+const protectedRoutes = require('./src/router/protected');
+const savedcategoryRouter = require('./src/router/savedRouter');
+const profileRouter = require('./src/router/profileRouter');
+const searchRouter = require('./src/router/searchRouter');
+
+const app = express();
+
+// Load environment variables
+dotenv.config();
+
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(cookieParser());
+app.use(helmet());
+app.disable('x-powered-by');
+
+// Correct CORS Setup 👇
+app.use(cors({
+  origin: '*', // ⚠️ If you want to allow any frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
+
+
+// Routes
+app.use('/api/exercises', exerciseRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/categorie', categorieRoutes);
+app.use('/api/video', levelRoutes);
+app.use('/api/types', typesRoutes);
+app.use('/api/atack', atackRoutes);
+app.use('/api/Bytime', videoByRoutes);
+app.use('/api/Plans', plansRouter);
+app.use('/api/Workouts', workoutsRouter);
+app.use('/api/protected', protectedRoutes);
+app.use('/api', savedcategoryRouter);
+app.use('/api/profile', profileRouter);
+app.use('/api', searchRouter);
+
+// Test Route
+app.get('/get', (req, res) => {
+  res.send('Fitness App API is running!');
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`✅ Server is running on port ${PORT}`);
 });
