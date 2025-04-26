@@ -57,7 +57,7 @@ app.use('/api',searchRouter)
 
 
 // Default route
-app.get('/', (req, res) => {
+app.get('/get', (req, res) => {
   res.send('Fitness App API is running!');
 });
 
