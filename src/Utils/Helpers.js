@@ -127,6 +127,9 @@ const deleteVideoFromStorage = (videoUrl) => {
 };
 */
 // Upload Video to Firebase Storage
+
+
+/*
 const uploadVideoToStorage = (file) => {
   return new Promise((resolve, reject) => {
     if (!file) return reject(new Error('No file provided for upload'));
@@ -156,7 +159,41 @@ const uploadVideoToStorage = (file) => {
 
     blobStream.end(file.buffer); // Finalize the upload stream
   });
+};*/
+
+const uploadVideoToStorage = (file) => {
+  return new Promise((resolve, reject) => {
+    if (!file) return reject(new Error('No file provided for upload'));
+
+    const videoFileName = `${uuidv4()}-${file.originalname}`;
+    const fileUpload = bucket.file(`videos/${videoFileName}`);
+
+    const blobStream = fileUpload.createWriteStream({
+      metadata: { contentType: file.mimetype }, // Ensure the video file type is correctly set
+    });
+
+    blobStream.on('error', (error) => {
+      reject(new Error(`Video upload failed: ${error.message}`));
+    });
+
+    blobStream.on('finish', async () => {
+      try {
+        const expirationDate = new Date();
+        expirationDate.setFullYear(expirationDate.getFullYear() + 10); // Set to 10 years from now
+        const [videoUrl] = await fileUpload.getSignedUrl({
+          action: 'read',
+          expires: expirationDate, // Use a valid expiration date
+        });
+        resolve(videoUrl);
+      } catch (error) {
+        reject(new Error(`Failed to generate signed URL for video: ${error.message}`));
+      }
+    });
+
+    blobStream.end(file.buffer); // Finalize the upload stream
+  });
 };
+
 
 // Delete Video from Firebase Storage
 const deleteVideoFromStorage = async (videoUrl) => {
