@@ -5,14 +5,18 @@ const {
   getVideoById,
   getAllLevelsInExercise ,
   addLevelToExercise,
-  getAllVideosInExercice,
   getVideoCollectionInExercise,
   getAllVideosByL,
   getAllVideosByDifficulty
 } = require('../models/levelModel');
-
-const { uploadVideoToStorage, deleteVideoFromStorage, uploadImage } = require('../Utils/Helpers');
+const { OpenAI } = require("openai");
+const { uploadVideoToStorage, deleteVideoFromStorage, uploadImage, deleteImageFromStorage } = require('../Utils/Helpers');
 const { db } = require('../Firebase/firebaseAdmin');
+
+
+
+
+
 
 
 // Add a video to a level
@@ -165,26 +169,45 @@ const deleteVideoHandler = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-// Update Video Handler
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const updateVideoHandler = async (req, res) => {
   try {
-    const { typeId,categoryId, exerciseId,atackId ,levelId, videoId } = req.params;
-    const { name, description } = req.body;
-    const file = req.file; // Assuming multer handles file upload with field name 'file'
+    const { typeId, categoryId, exerciseId, atackId, levelId, videoId } = req.params;
+    const { repetition, serieNumber } = req.body;
+    const file = req.files ? req.files.video : null; // Video file
+    const image = req.files ? req.files.image : null; // Image file
 
     // Reference to the video document in Firestore
-    const videoDocRef = getVideosCollection(typeId,categoryId, exerciseId,atackId, levelId).doc(videoId);
+    const videoDocRef = getVideosCollection(typeId, categoryId, exerciseId, atackId, levelId).doc(videoId);
     const videoDoc = await videoDocRef.get();
 
     if (!videoDoc.exists) {
       return res.status(404).json({ error: 'Video not found' });
     }
 
+    // Fetch the current video and image URLs
     let videoUrl = videoDoc.data().videoUrl;
+    let imageUrl = videoDoc.data().imageUrl;
 
-    // Step 1: Replace the video file if a new file is uploaded
+    // Step 1: Replace the video file if a new video file is uploaded
     if (file) {
-      console.log("New file detected, replacing video...");
+      console.log("New video file detected, replacing...");
 
       // Delete the old video from storage if it exists
       if (videoUrl) {
@@ -193,29 +216,58 @@ const updateVideoHandler = async (req, res) => {
       }
 
       // Upload the new video file
-      videoUrl = await uploadVideoToStorage(file, 'videos');
+      videoUrl = await uploadVideoToStorage(file[0]);
       console.log("New video uploaded with URL:", videoUrl);
-    } else {
-      console.log("No new file uploaded, keeping existing video URL.");
     }
 
-    // Step 2: Prepare updated data
+    // Step 2: Replace the image file if a new image file is uploaded
+    if (image) {
+      console.log("New image file detected, replacing...");
+
+      // Delete the old image from storage if it exists
+      if (imageUrl) {
+        await deleteImageFromStorage(imageUrl); // Assuming a helper function to delete images
+        console.log("Old image deleted from storage.");
+      }
+
+      // Upload the new image file
+      imageUrl = await uploadImage(image[0]);
+      console.log("New image uploaded with URL:", imageUrl);
+    }
+
+    // Step 3: Prepare updated data
     const updatedData = {
-      name: name || videoDoc.data().name, // Only update if new data is provided
-      description: description || videoDoc.data().description,
-      videoUrl, // Updated URL if the file was replaced, else it remains the same
+      // Only update repetition and serieNumber if provided, otherwise retain existing values
+      repetition: repetition !== undefined ? repetition : videoDoc.data().repetition,
+      serieNumber: serieNumber !== undefined ? serieNumber : videoDoc.data().serieNumber,
+      
+      // Retain existing name and description
+      videoUrl,  // Updated URL if the file was replaced, else it remains the same
+      imageUrl,  // Updated image URL if the image was replaced, else it remains the same
     };
 
-    // Step 3: Update video metadata in Firestore
+    // Step 4: Update video metadata in Firestore
     await videoDocRef.update(updatedData);
     console.log("Firestore document updated with:", updatedData);
 
-    res.status(200).json({ message: 'Video updated successfully', videoUrl });
+    res.status(200).json({ message: 'Video and image updated successfully', videoUrl, imageUrl });
   } catch (error) {
-    console.error("Error updating video:", error);
+    console.error("Error updating video and image:", error);
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
 // Controller function to get all levels in an exercise
 const getAllLevelsHandler = async (req, res) => {
 
@@ -322,6 +374,11 @@ const getVideosByDifficultyController = async (req, res) => {
 
 
 
+
+
+
+
+
 module.exports = {
   addVideoHandler,
   updateVideoHandler,
@@ -333,5 +390,4 @@ module.exports = {
   addVideoHandler2,
   getAllVideosInExerciceHandler,
   getVideoByLevelHandler,
-  getVideosByDifficultyController
-};
+  getVideosByDifficultyController};

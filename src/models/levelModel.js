@@ -110,7 +110,7 @@ const getAllLevelsInExercise = async (typeId,categoryId, exerciseId,atackId) => 
     .doc(categoryId)
     .collection('exercises')
     .doc(exerciseId)
-    collection('atack')
+    .collection('atack')
     .doc(atackId).
     collection('levels');
 

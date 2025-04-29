@@ -20,7 +20,6 @@ const router = express.Router();
 
 router.post('/type/:typeId/categories/:categoryId/exercises/:exerciseId/atack/:atackId/levels/:levelId/videos',upload.single('file'), addVideoHandler);
 router.post('/type/:typeId/categories/:categoryId/exercises/:exerciseId/atack/:atackId/levels/:levelId/videos2',uploade, addVideoHandler2);
-router.put('/type/:typeId/categories/:categoryId/exercises/:exerciseId/atack/:atackId/levels/:levelId/videos/:videoId',upload.single('file'), updateVideoHandler);
 router.delete('/type/:typeId/categories/:categoryId/exercises/:exerciseId/atack/:atackId/levels/:levelId/videos/:videoId', deleteVideoHandler);
 router.post('/type/:typeId/categories/:categoryId/exercises/:exerciseId/atack/:atackId/levels', addLevelHandler);
 router.get('/type/:typeId/categories/:categoryId/exercises/:exerciseId/atack/:atackId/levels', getAllLevelsHandler);
@@ -29,7 +28,7 @@ router.get('/type/:typeId/categories/:categoryId/exercises/:exerciseId/atack/:at
 router.get('/type/:typeId/categories/:categoryId/exercises/:exerciseId',getAllVideosInExerciceHandler)
 router.get('/type/:typeId/categories/:categoryId/exercises/:exerciseId/level',getVideoByLevelHandler)
 router.get('/type/getAllVideoInLevel/:difficulty',getVideosByDifficultyController)
-
+router.put('/type/update/:typeId/categories/:categoryId/exercises/:exerciseId/atacks/:atackId/levels/:levelId/video/:videoId',uploade,updateVideoHandler)
 
 
 module.exports = router;

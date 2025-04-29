@@ -13,7 +13,7 @@ const protectedRoutes = require('./src/router/protected');
 const savedcategoryRouter = require('./src/router/savedRouter');
 const profileRouter=require('./src/router/profileRouter')
 const searchRouter=require('./src/router/searchRouter')
-
+const AiRouter=require('./src/router/IaRouter')
 
 const helmet =require('helmet') ;
 const bodyParser =require('body-parser') ;
@@ -53,7 +53,7 @@ app.use('/api/protected',protectedRoutes);
 app.use('/api',savedcategoryRouter);
 app.use('/api/profile',profileRouter);
 app.use('/api',searchRouter)
-
+app.use('/api/ai',AiRouter)
 
 
 // Default route
